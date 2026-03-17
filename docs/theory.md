@@ -80,8 +80,9 @@ The admissible action set is what makes governance *operational* rather than *ad
 Example:
 - A new action `auto_commit` is added: `T(idle, auto_commit) = committed`
 - The kernel has no rule for `(idle, auto_commit)`
-- If the kernel defaults to DENY, the action is blocked — but the governance team may not know the gap exists
-- If the kernel does not cover the action at all, the transition may execute outside governance
+- The closed-world default resolves to DENY — the action is blocked
+- But the governance team may not know the gap exists
+- The kernel caught the action by default, not by design — that is the drift
 
 Drift is detected by comparing the actions defined in the transition system against the actions covered by the kernel:
 

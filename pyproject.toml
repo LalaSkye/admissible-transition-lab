@@ -1,0 +1,10 @@
+[project]
+name = "admissible-transition-lab"
+version = "1.0.0"
+description = "Governance becomes operational when admissibility is enforced at the execution boundary of a transition system."
+requires-python = ">=3.10"
+license = {text = "MIT"}
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
