@@ -93,7 +93,7 @@ If `Drift(s)` is non-empty, the constraint kernel has a gap. Governance is incom
 
 **Key statement:**
 
-> Safety in autonomous systems depends on controlling the reachable state space rather than controlling model outputs.
+> Safety in autonomous systems is achieved by constraining the reachable state space, not by attempting to regulate model outputs.
 
 Model outputs are proposals. State transitions are execution. Governance must operate at the execution boundary — where proposals become reality — not at the proposal layer where they can be ignored.
 
