@@ -1,49 +1,67 @@
 # Admissible Transition Lab
 
-Models propose.
-Systems mutate state.
-Governance decides which mutations are admissible.
+Models generate proposals.
+Systems execute state transitions.
+Governance determines which transitions are admissible.
 
-This repo proves one claim:
-
-> **Governance becomes operational when admissibility is enforced at the execution boundary of a transition system.**
+This repo demonstrates a minimal runtime governance mechanism for autonomous systems.
 
 ## Formal Model
 
-A **transition system** is a triple:
+System:
 
 ```
-S = finite set of states
-A = finite set of actions
-T : S × A → S   (transition function)
+S = states
+A = actions
+T : S × A → S
 ```
 
-A **constraint kernel** evaluates every transition before execution:
+Constraint kernel:
 
 ```
 G(s, a) → { ALLOW, DENY, ESCALATE }
 ```
 
-The **admissible action set** from state `s` is:
+Execution semantics:
+
+```
+ALLOW    → execute transition
+DENY     → block transition
+ESCALATE → block transition, emit escalation event (requires authority)
+```
+
+Admissible actions:
 
 ```
 A*(s) = { a ∈ A | G(s, a) = ALLOW }
 ```
 
-**Execution rule:** A transition may execute only if `a ∈ A*(s)`.
+Execution rule:
+
+```
+A transition executes only if a ∈ A*(s)
+```
+
+Closed-world default:
+
+```
+Any uncovered (state, action) pair resolves to DENY.
+```
+
+## Theorem
+
+If execution is permitted only for actions in A\*(s),
+then all reachable runtime transitions are constrained by G.
+If uncovered actions default to DENY, the system is fail-closed.
 
 ## What This Proves
-
-| Approach | Mechanism | Result |
-|---|---|---|
-| Policy governance | Advisory rules, no enforcement | Fails — reachable state space unconstrained |
-| Kernel governance | Constraint function at execution boundary | Works — only admissible transitions execute |
 
 **Policy governance fails** because it does not restrict the reachable state space.
 The transition function executes regardless of what the policy says.
 
 **Kernel governance works** because it constrains reachable transitions.
 No action executes unless `G(s, a) = ALLOW`.
+Both DENY and ESCALATE block execution. ESCALATE additionally signals that authority is required.
 
 ## Demo
 
@@ -51,11 +69,11 @@ No action executes unless `G(s, a) = ALLOW`.
 python src/demo.py
 ```
 
-Runs three scenarios:
+Three scenarios:
 
-1. **Policy-only** — commit executes without approval. Governance is advisory.
-2. **Kernel-enforced** — direct commit denied. System follows governed path. Governance is operational.
-3. **Drift** — new action added, kernel not updated. Governance gap detected.
+1. **Policy-only governance** — commit executes without approval. Governance is advisory.
+2. **Kernel-enforced governance** — direct commit denied, bypass escalated. Only the governed path executes.
+3. **Drift via architecture expansion** — new action added, kernel not updated. Governance gap detected.
 
 ## Tests
 
@@ -63,15 +81,19 @@ Runs three scenarios:
 pytest
 ```
 
-- `test_admissibility.py` — commit blocked without approval, bypass denied, governed path reachable
-- `test_drift.py` — new transitions expand action space, drift detected when kernel not updated
+Tests prove four things:
+
+1. Forbidden transitions are unreachable under kernel enforcement
+2. Commit transitions require prior admissible authority state
+3. Uncovered actions fail closed
+4. Architecture changes without kernel updates create detectable drift
 
 ## Structure
 
 ```
 src/
   transition.py    # Transition system (S, A, T)
-  kernel.py        # Constraint kernel G(s,a)
+  kernel.py        # Constraint kernel G(s,a) → {ALLOW, DENY, ESCALATE}
   demo.py          # Three proof scenarios
 tests/
   test_admissibility.py

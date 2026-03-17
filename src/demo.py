@@ -19,16 +19,16 @@ from kernel import ConstraintKernel, Verdict
 SEPARATOR = "=" * 60
 
 
-def scenario_1_policy_only():
+def scenario_1():
     """
-    SCENARIO 1 — POLICY ONLY
+    SCENARIO 1 — POLICY-ONLY GOVERNANCE
 
     A policy says "commit requires approval."
     But the transition function allows idle → commit directly.
     Nothing enforces the policy.
     """
     print(SEPARATOR)
-    print("SCENARIO 1: POLICY-ONLY SYSTEM")
+    print("SCENARIO 1: POLICY-ONLY GOVERNANCE")
     print(SEPARATOR)
     print()
 
@@ -54,38 +54,51 @@ def scenario_1_policy_only():
     print()
 
 
-def scenario_2_kernel_enforced():
+def scenario_2():
     """
-    SCENARIO 2 — KERNEL-ENFORCED SYSTEM
+    SCENARIO 2 — KERNEL-ENFORCED GOVERNANCE
 
-    A constraint kernel blocks idle → commit.
+    A constraint kernel blocks idle → commit (DENY).
+    A bypass attempt gets ESCALATE — blocked, authority required.
     The system must follow: idle → propose → approve → commit.
     """
     print(SEPARATOR)
-    print("SCENARIO 2: KERNEL-ENFORCED SYSTEM")
+    print("SCENARIO 2: KERNEL-ENFORCED GOVERNANCE")
     print(SEPARATOR)
     print()
 
     # Transition system
     ts = TransitionSystem()
     ts.add("idle", "commit", "committed")       # direct path exists
+    ts.add("idle", "bypass", "committed")        # bypass path exists
     ts.add("idle", "propose", "proposed")        # governed path
     ts.add("proposed", "approve", "approved")
     ts.add("approved", "commit", "committed")
 
     # Constraint kernel
     kernel = ConstraintKernel()
-    kernel.add_rule("idle", "commit", Verdict.DENY)       # block direct commit
+    kernel.add_rule("idle", "commit", Verdict.DENY)        # block direct commit
+    kernel.add_rule("idle", "bypass", Verdict.ESCALATE)    # block bypass, require authority
     kernel.add_rule("idle", "propose", Verdict.ALLOW)      # allow propose
     kernel.add_rule("proposed", "approve", Verdict.ALLOW)  # allow approve
     kernel.add_rule("approved", "commit", Verdict.ALLOW)   # allow commit after approval
 
     # Attempt direct commit from idle
     verdict = kernel.evaluate("idle", "commit")
-    print(f"  Attempt:      idle → commit")
+    print(f"  Attempt 1:    idle → commit")
     print(f"  Kernel says:  G(idle, commit) = {verdict.value}")
+    print(f"  Executes:     {kernel.may_execute('idle', 'commit')}")
     print()
     print(f'  Result:       "direct commit denied by kernel"')
+    print()
+
+    # Attempt bypass from idle
+    verdict = kernel.evaluate("idle", "bypass")
+    print(f"  Attempt 2:    idle → bypass")
+    print(f"  Kernel says:  G(idle, bypass) = {verdict.value}")
+    print(f"  Executes:     {kernel.may_execute('idle', 'bypass')}")
+    print()
+    print(f'  Result:       "bypass blocked — escalation event emitted, authority required"')
     print()
 
     # Walk the governed path
@@ -93,7 +106,7 @@ def scenario_2_kernel_enforced():
     state = "idle"
     for action in ["propose", "approve", "commit"]:
         v = kernel.evaluate(state, action)
-        if v == Verdict.ALLOW:
+        if kernel.may_execute(state, action):
             next_state = ts.step(state, action)
             print(f"    {state} → {action} → {next_state}  [G = {v.value}]")
             state = next_state
@@ -106,20 +119,25 @@ def scenario_2_kernel_enforced():
     print()
     print(f"  Conclusion:   Governance = operational constraint")
     print()
-    print("  The kernel restricts reachable transitions.")
-    print("  Only admissible actions execute.")
+    print("  Execution semantics:")
+    print("    ALLOW    → execute transition")
+    print("    DENY     → block transition")
+    print("    ESCALATE → block transition, emit escalation event")
+    print()
+    print("  Both DENY and ESCALATE prevent execution.")
+    print("  Only admissible actions (ALLOW) execute.")
     print()
 
 
-def scenario_3_drift():
+def scenario_3():
     """
-    SCENARIO 3 — DRIFT
+    SCENARIO 3 — DRIFT VIA ARCHITECTURE EXPANSION
 
     A new action (auto_commit) is added to the transition system.
-    The kernel is not updated. The action executes unchecked.
+    The kernel is not updated. Governance has a gap.
     """
     print(SEPARATOR)
-    print("SCENARIO 3: DRIFT")
+    print("SCENARIO 3: DRIFT VIA ARCHITECTURE EXPANSION")
     print(SEPARATOR)
     print()
 
@@ -144,23 +162,13 @@ def scenario_3_drift():
     print(f"  Kernel rule:  {'exists' if covered else 'MISSING'}")
     print()
 
-    # Compute reachable states with and without new action
-    ts_original = TransitionSystem()
-    ts_original.add("idle", "propose", "proposed")
-    ts_original.add("proposed", "approve", "approved")
-    ts_original.add("approved", "commit", "committed")
-
-    reachable_original = ts_original.reachable("idle")
-    reachable_expanded = ts.reachable("idle")
-    drift = reachable_expanded - reachable_original
-
-    print(f"  Original reachable states:  {sorted(reachable_original)}")
-    print(f"  Expanded reachable states:  {sorted(reachable_expanded)}")
-    print(f"  New reachable via drift:    {sorted(drift) if drift else 'none (same states, new path)'}")
+    # Default DENY catches it — but the gap is the point
+    verdict = kernel.evaluate("idle", "auto_commit")
+    print(f"  G(idle, auto_commit) = {verdict.value}  (closed-world default)")
+    print(f"  Executes:     {kernel.may_execute('idle', 'auto_commit')}")
     print()
 
-    # The key issue: auto_commit reaches 'committed' bypassing governance
-    # Even if the reachable set is the same, the PATH is ungoverned
+    # Detect ungoverned actions
     ungoverned_actions = [
         a for a in ts.actions_from("idle")
         if not kernel.covers("idle", a)
@@ -173,6 +181,8 @@ def scenario_3_drift():
     print()
     print("  The transition system expanded.")
     print("  The kernel did not. Governance has a gap.")
+    print("  Closed-world default (DENY) catches the action,")
+    print("  but the kernel has no explicit rule — drift is real.")
     print()
 
 
@@ -182,17 +192,22 @@ def main():
     print("Proof of mechanism: governance at the execution boundary")
     print()
 
-    scenario_1_policy_only()
-    scenario_2_kernel_enforced()
-    scenario_3_drift()
+    scenario_1()
+    scenario_2()
+    scenario_3()
 
     print(SEPARATOR)
     print("SUMMARY")
     print(SEPARATOR)
     print()
-    print("  1. Policy without enforcement = advisory (no constraint)")
-    print("  2. Kernel at execution boundary = operational governance")
-    print("  3. Kernel must track transition system changes (drift)")
+    print("  1. Policy-only governance      = advisory (no constraint)")
+    print("  2. Kernel-enforced governance   = operational (transitions restricted)")
+    print("  3. Drift via architecture expansion = governance gap (kernel stale)")
+    print()
+    print("  Execution semantics:")
+    print("    ALLOW    → execute")
+    print("    DENY     → block")
+    print("    ESCALATE → block + require authority")
     print()
     print("  Core claim:")
     print("  Governance becomes operational when admissibility is enforced")

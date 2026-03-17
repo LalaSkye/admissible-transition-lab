@@ -45,9 +45,11 @@ A **constraint kernel** is a function that evaluates every transition *before* i
 G : S × A → { ALLOW, DENY, ESCALATE }
 ```
 
-- **ALLOW** — the transition may execute
-- **DENY** — the transition is blocked
-- **ESCALATE** — the transition requires human review before proceeding
+- **ALLOW** — execute the transition
+- **DENY** — block the transition
+- **ESCALATE** — block the transition and emit an escalation event (authority required to proceed)
+
+Both DENY and ESCALATE prevent execution. The difference is that ESCALATE signals the system needs a human or higher-authority decision before the action can be reconsidered. Without this distinction, escalation gets logged but execution can still sneak through.
 
 The kernel sits at the **execution boundary** — the point where a proposed action becomes an executed state change. Nothing executes without passing through `G`.
 
