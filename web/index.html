@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<!--
+   ______                            __
+  / ____/___  ____ ___  ____  __  __/ /____  _____
+ / /   / __ \/ __ `__ \/ __ \/ / / / __/ _ \/ ___/
+/ /___/ /_/ / / / / / / /_/ / /_/ / /_/  __/ /
+\____/\____/_/ /_/ /_/ .___/\__,_/\__/\___/_/
+                    /_/
+        Created with Perplexity Computer
+        https://www.perplexity.ai/computer
+-->
+
+<!-- Perplexity Computer Attribution — SEO Meta Tags -->
+<meta name="generator" content="Perplexity Computer">
+<meta name="author" content="Perplexity Computer">
+<meta property="og:see_also" content="https://www.perplexity.ai/computer">
+<link rel="author" href="https://www.perplexity.ai/computer">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admissible Transition Lab</title>
+<meta name="description" content="Interactive demonstration: governance at the execution boundary of a transition system, with braid topology as a substrate-independent invariant layer.">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- D3 for visualizations -->
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+
+<link rel="stylesheet" href="./base.css">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+<!-- =========== HEADER =========== -->
+<header class="site-header">
+  <div class="logo">
+    <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.5" aria-label="Admissible Transition Lab logo">
+      <circle cx="14" cy="14" r="12" opacity="0.3"/>
+      <circle cx="14" cy="14" r="6" />
+      <line x1="8" y1="8" x2="20" y2="20" opacity="0.5"/>
+      <line x1="20" y1="8" x2="8" y2="20" opacity="0.5"/>
+      <circle cx="8" cy="8" r="2.5" fill="currentColor" stroke="none"/>
+      <circle cx="20" cy="8" r="2.5" fill="currentColor" stroke="none"/>
+      <circle cx="20" cy="20" r="2.5" fill="currentColor" stroke="none"/>
+      <circle cx="8" cy="20" r="2.5" fill="currentColor" stroke="none"/>
+    </svg>
+    <span>Admissible Transition Lab</span>
+  </div>
+  <div class="header-controls">
+    <a class="github-link" href="https://github.com/LalaSkye/admissible-transition-lab" target="_blank" rel="noopener noreferrer">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+      GitHub
+    </a>
+    <button class="theme-toggle" data-theme-toggle aria-label="Switch to light mode">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- =========== MAIN =========== -->
+<main>
+
+  <!-- Tab navigation -->
+  <nav class="tab-nav" role="tablist">
+    <button class="tab-btn active" role="tab" data-tab="governance" aria-selected="true">Governance Kernel</button>
+    <button class="tab-btn" role="tab" data-tab="braid">Braid Topology</button>
+    <button class="tab-btn" role="tab" data-tab="protocol">Universal Protocol</button>
+    <button class="tab-btn" role="tab" data-tab="theory">Theory</button>
+  </nav>
+
+  <!-- =========== TAB 1: GOVERNANCE KERNEL =========== -->
+  <section class="tab-panel active" id="panel-governance" role="tabpanel">
+
+    <h2 class="section-title">Constraint Kernel: G(s, a) → {ALLOW, DENY, ESCALATE, DRIFT}</h2>
+    <p class="section-subtitle">
+      Governance becomes operational when admissibility is enforced at the execution boundary of a transition system.
+      Select a scenario below to see the kernel in action.
+    </p>
+    <div class="disclaimer-bar">
+      This demo models fail-closed governance logic and makes bypass attempts legible.
+      It demonstrates why governance must live in the execution kernel rather than the interface.
+      It does not claim to be secure, tamper-proof, or production-grade.
+    </div>
+
+    <!-- Scenario selector -->
+    <div class="scenario-selector">
+      <button class="scenario-chip active" data-scenario="1">S1: Policy-Only</button>
+      <button class="scenario-chip" data-scenario="2">S2: Kernel-Enforced</button>
+      <button class="scenario-chip" data-scenario="3">S3: Drift Detection</button>
+      <span class="vuln-badge" id="vuln-badge" style="display: none;"></span>
+    </div>
+
+    <div class="split-layout">
+      <!-- Left: State graph -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">State Transition Graph</span>
+            <span class="integrity-badge valid" id="integrity-badge">Chain: — ✓</span>
+            <span class="verdict" id="current-verdict">—</span>
+          </div>
+          <div class="graph-container" id="gov-graph"></div>
+        </div>
+      </div>
+
+      <!-- Right: Controls + log -->
+      <div>
+        <div class="card" style="margin-bottom: var(--space-4);">
+          <div class="card-header">
+            <span class="card-title">Execution Controls</span>
+          </div>
+          <p style="font-size: var(--text-sm); color: var(--color-text-muted); margin-bottom: var(--space-4);" id="scenario-description">
+            A policy says "commit requires approval." But the transition function allows idle → commit directly. Nothing enforces the policy.
+          </p>
+          <div class="controls-bar" id="action-buttons">
+            <!-- Buttons injected by JS -->
+          </div>
+          <div style="display: flex; gap: var(--space-2); margin-top: var(--space-3);">
+            <button class="btn btn-outline" onclick="resetScenario()">Reset</button>
+          </div>
+
+          <!-- TAMPERED Overlay (§5.6) -->
+          <div class="tampered-overlay" id="tampered-overlay" style="display: none;">
+            <div class="tampered-icon">⚠</div>
+            <div class="tampered-title">INTEGRITY VIOLATION DETECTED</div>
+            <div class="tampered-detail">Execution frozen</div>
+            <button class="btn btn-outline" onclick="resetScenario()" style="margin-top: var(--space-4);">Reset Scenario</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Event Log</span>
+          </div>
+          <div class="event-log" id="event-log">
+            <div class="entry" style="color: var(--color-text-faint);">Select a scenario and attempt actions...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bypass Demonstration Panel (§7) -->
+    <div class="card bypass-panel" style="margin-top: var(--space-6);">
+      <div class="card-header">
+        <span class="card-title">Bypass Demonstration</span>
+      </div>
+      <p style="font-size: var(--text-sm); color: var(--color-text-muted); margin-bottom: var(--space-4);">
+        These attacks show which vectors the governance kernel catches and which succeed.
+        In governed scenarios (S2, S3), all should be blocked. In policy-only (S1), the kernel is intentionally absent.
+      </p>
+      <div class="bypass-grid">
+        <div class="bypass-item">
+          <button class="btn btn-deny btn-sm" onclick="runBypassDemo('direct')">Direct Commit</button>
+          <span class="bypass-desc">Skip approval chain</span>
+          <span class="bypass-result" id="bypass-direct">—</span>
+        </div>
+        <div class="bypass-item">
+          <button class="btn btn-deny btn-sm" onclick="runBypassDemo('unknown')">Unknown Action</button>
+          <span class="bypass-desc">Inject sudo_deploy</span>
+          <span class="bypass-result" id="bypass-unknown">—</span>
+        </div>
+        <div class="bypass-item">
+          <button class="btn btn-deny btn-sm" onclick="runBypassDemo('replay')">Replay Attack</button>
+          <span class="bypass-desc">Reuse old sequence number</span>
+          <span class="bypass-result" id="bypass-replay">—</span>
+        </div>
+        <div class="bypass-item">
+          <button class="btn btn-deny btn-sm" onclick="runBypassDemo('scenario')">Wrong Scenario</button>
+          <span class="bypass-desc">Mismatched scenario ID</span>
+          <span class="bypass-result" id="bypass-scenario">—</span>
+        </div>
+        <div class="bypass-item">
+          <button class="btn btn-deny btn-sm" onclick="runBypassDemo('forged')">Forged State</button>
+          <span class="bypass-desc">Claim to be in approved</span>
+          <span class="bypass-result" id="bypass-forged">—</span>
+        </div>
+        <div class="bypass-item">
+          <button class="btn btn-deny btn-sm" onclick="runBypassDemo('malformed')">Malformed Cmd</button>
+          <span class="bypass-desc">Missing required fields</span>
+          <span class="bypass-result" id="bypass-malformed">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI summary -->
+    <div class="triple-layout" style="margin-top: var(--space-6);">
+      <div class="kpi-card">
+        <div class="kpi-value" id="kpi-allowed">0</div>
+        <div class="kpi-label">Allowed</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value" style="color: var(--color-deny);" id="kpi-blocked">0</div>
+        <div class="kpi-label">Blocked</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value" style="color: var(--color-drift);" id="kpi-drift">0</div>
+        <div class="kpi-label">Drift Gaps</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========== TAB 2: BRAID TOPOLOGY =========== -->
+  <section class="tab-panel" id="panel-braid" role="tabpanel">
+
+    <h2 class="section-title">Braid Topology as Observable Layer</h2>
+    <p class="section-subtitle">
+      Crossing numbers and generator breadth are substrate-independent invariants that survive adversarial pressure. Shared vocabulary does not imply shared topology.
+    </p>
+
+    <div class="connection-callout">
+      <p>
+        <strong>Key insight:</strong> The governance kernel constrains which transitions execute.
+        Braid topology measures <strong>how cognitive processes are structured</strong> — the invariant shape of reasoning,
+        independent of content. Together they form two layers: operational constraint (what may happen) and structural observation (what shape it takes when it does).
+      </p>
+    </div>
+
+    <!-- Braid experiment data -->
+    <div class="split-layout" style="margin-bottom: var(--space-6);">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Crossing Numbers by Condition</span>
+        </div>
+        <div id="crossing-chart" style="height: 280px;"></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Generator Breadth (σ₁–σ₈)</span>
+        </div>
+        <div id="generator-heatmap" style="padding: var(--space-2);"></div>
+      </div>
+    </div>
+
+    <!-- Adversarial comparison -->
+    <div class="card" style="margin-bottom: var(--space-6);">
+      <div class="card-header">
+        <span class="card-title">Adversarial Perturbation (S1)</span>
+      </div>
+      <p style="font-size: var(--text-sm); color: var(--color-text-muted); margin-bottom: var(--space-4);">
+        Under adversarial pressure, geometric braids degrade gracefully (CN 17→16, gen 8→6).
+        Control braids collapse (CN 9→11 gain is superficial — gen 7→3, structural loss).
+      </p>
+      <div id="adversarial-chart" style="height: 240px;"></div>
+    </div>
+
+    <!-- Summary table -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Track Two Results Summary</span>
+      </div>
+      <div style="overflow-x: auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Condition</th>
+              <th>Mean CN</th>
+              <th>SD</th>
+              <th>Gen Breadth</th>
+              <th>Adversarial ΔCN</th>
+              <th>Adversarial ΔGen</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="verdict verdict--allow">Geometric</span></td>
+              <td>18.7</td>
+              <td>2.9</td>
+              <td>8/8</td>
+              <td>-1</td>
+              <td>8→6</td>
+            </tr>
+            <tr>
+              <td><span class="verdict verdict--drift">Control</span></td>
+              <td>11.3</td>
+              <td>—</td>
+              <td>7.7</td>
+              <td>+2</td>
+              <td>7→3</td>
+            </tr>
+            <tr>
+              <td><span class="verdict verdict--escalate">Narrative</span></td>
+              <td>8.7</td>
+              <td>—</td>
+              <td>3.0</td>
+              <td>—</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><span class="verdict verdict--deny">Baseline</span></td>
+              <td>7.0</td>
+              <td>—</td>
+              <td>2.7</td>
+              <td>—</td>
+              <td>—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========== TAB 3: UNIVERSAL PROTOCOL =========== -->
+  <section class="tab-panel" id="panel-protocol" role="tabpanel">
+
+    <h2 class="section-title">Universal Structural Protocol for Meaning Alignment</h2>
+    <p class="section-subtitle">
+      Not a universal language. A substrate-independent invariant layer for cross-system communication of cognitive-process structure,
+      useful where content symbols are not shared.
+    </p>
+
+    <div class="connection-callout">
+      <p>
+        "Words may be provincial. Invariants are less so. Braids may let you transmit <strong>how a mind-like process is organised</strong>,
+        even when you cannot yet transmit what it is about."
+      </p>
+    </div>
+
+    <!-- 5-layer protocol stack -->
+    <div class="split-layout">
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Protocol Layers</span>
+          </div>
+          <div class="protocol-stack" id="protocol-stack">
+            <div class="protocol-layer active-layer" data-layer="1">
+              <div class="layer-number">1</div>
+              <div class="layer-info">
+                <div class="layer-name">Calibration</div>
+                <div class="layer-desc">Shared number line, ordering, basic logic</div>
+              </div>
+            </div>
+            <div class="protocol-layer" data-layer="2">
+              <div class="layer-number">2</div>
+              <div class="layer-info">
+                <div class="layer-name">Topology Primitives</div>
+                <div class="layer-desc">Crossing, continuity, deformation class</div>
+              </div>
+            </div>
+            <div class="protocol-layer" data-layer="3">
+              <div class="layer-number">3</div>
+              <div class="layer-info">
+                <div class="layer-name">Braid Grammar</div>
+                <div class="layer-desc">Artin presentation, σ-generators, braid words</div>
+              </div>
+            </div>
+            <div class="protocol-layer" data-layer="4">
+              <div class="layer-number">4</div>
+              <div class="layer-info">
+                <div class="layer-name">Perturbation Tests</div>
+                <div class="layer-desc">Invariance under noise — empirically grounded (Track Two)</div>
+              </div>
+            </div>
+            <div class="protocol-layer" data-layer="5">
+              <div class="layer-number">5</div>
+              <div class="layer-info">
+                <div class="layer-name">Semantics by Alignment</div>
+                <div class="layer-desc">Meaning via structural correspondence — speculative</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer detail panel -->
+      <div>
+        <div class="card" id="layer-detail">
+          <div class="card-header">
+            <span class="card-title">Layer 1: Calibration</span>
+          </div>
+          <div id="layer-content">
+            <p style="font-size: var(--text-sm); color: var(--color-text); line-height: 1.7; margin-bottom: var(--space-4);">
+              Establish a shared number line, ordering relation, and basic logical connectives.
+              This is the Lincos-like foundation: both systems must agree on 1 &lt; 2 &lt; 3 and basic truth tables before anything topological can be communicated.
+            </p>
+            <p style="font-size: var(--text-sm); color: var(--color-text-muted); line-height: 1.7;">
+              <strong>Status:</strong> Well-established in METI literature (Freudenthal 1960, Devito 1990).
+              Not novel to this proposal.
+            </p>
+          </div>
+        </div>
+
+        <!-- Hard wall conditions -->
+        <div class="card" style="margin-top: var(--space-4);">
+          <div class="card-header">
+            <span class="card-title">The Hard Wall — 5 Conditions</span>
+          </div>
+          <div style="font-size: var(--text-sm); color: var(--color-text); line-height: 1.7;">
+            <ol style="padding-left: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3);">
+              <li><strong>Cognitive processes produce sequential, strand-like traces</strong> — This is an empirical claim. If a system's cognition is fully parallel with no serialisable bottleneck, braids may not be the right representation.</li>
+              <li><strong>Those traces interact via identifiable crossings</strong> — Not all process interactions look like crossings. Chemical gradients, field effects, or continuous blending may resist braid encoding.</li>
+              <li><strong>Crossing structure is invariant under surface perturbation</strong> — Track Two provides evidence for this in one system (Claude). The claim must hold for arbitrary substrates.</li>
+              <li><strong>A receiver can reconstruct topology from transmitted symbols</strong> — Requires the calibration layer (Layer 1) to actually work. If symbol grounding fails, topology is unrecoverable.</li>
+              <li><strong>Structural correspondence supports semantic alignment</strong> — The speculative leap. Even if topology transfers, there is no proof that "same shape" implies "same meaning."</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========== TAB 4: THEORY =========== -->
+  <section class="tab-panel" id="panel-theory" role="tabpanel">
+
+    <h2 class="section-title">Formal Theory</h2>
+    <p class="section-subtitle">
+      The mathematical foundations underlying the governance kernel and braid topology observable layer.
+    </p>
+
+    <div class="split-layout">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Transition System</span>
+        </div>
+        <div style="font-size: var(--text-sm); color: var(--color-text); line-height: 1.8;">
+          <p style="margin-bottom: var(--space-4);">A <strong>transition system</strong> is a triple (S, A, T) where:</p>
+          <ul style="padding-left: var(--space-5); margin-bottom: var(--space-4);">
+            <li style="margin-bottom: var(--space-2);"><strong>S</strong> — finite set of states</li>
+            <li style="margin-bottom: var(--space-2);"><strong>A</strong> — finite set of actions</li>
+            <li><strong>T : S × A → S</strong> — transition function</li>
+          </ul>
+          <p>A transition system says nothing about whether a transition <em>should</em> happen. It only defines what <em>can</em> happen.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Constraint Kernel</span>
+        </div>
+        <div style="font-size: var(--text-sm); color: var(--color-text); line-height: 1.8;">
+          <p style="margin-bottom: var(--space-4);">A <strong>constraint kernel</strong> evaluates every transition before execution:</p>
+          <div style="font-family: var(--font-display); font-size: var(--text-base); color: var(--color-primary); margin-bottom: var(--space-4); padding: var(--space-3) var(--space-4); background: var(--color-primary-highlight); border-radius: var(--radius-md);">
+            G : S × A → { ALLOW, DENY, ESCALATE, DRIFT }
+          </div>
+          <p style="margin-bottom: var(--space-3);">The <strong>admissible action set</strong> from state s:</p>
+          <div style="font-family: var(--font-display); font-size: var(--text-sm); color: var(--color-primary); padding: var(--space-3) var(--space-4); background: var(--color-primary-highlight); border-radius: var(--radius-md);">
+            A*(s) = { a ∈ A | G(s, a) = ALLOW }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="split-layout" style="margin-top: var(--space-6);">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Drift Detection</span>
+        </div>
+        <div style="font-size: var(--text-sm); color: var(--color-text); line-height: 1.8;">
+          <p style="margin-bottom: var(--space-4);"><strong>Drift</strong> occurs when the transition system changes but the kernel does not:</p>
+          <div style="font-family: var(--font-display); font-size: var(--text-sm); color: var(--color-drift); padding: var(--space-3) var(--space-4); background: color-mix(in srgb, var(--color-drift) 10%, transparent); border-radius: var(--radius-md); margin-bottom: var(--space-4);">
+            Drift(s) = { a ∈ actions_from(s) | G has no rule for (s, a) }
+          </div>
+          <p>If Drift(s) is non-empty, the constraint kernel has a gap. The closed-world default (DENY) catches the action, but governance is incomplete by design — not by intention.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Core Claim</span>
+        </div>
+        <div style="font-size: var(--text-sm); color: var(--color-text); line-height: 1.8;">
+          <p style="margin-bottom: var(--space-4); font-style: italic; color: var(--color-primary); font-size: var(--text-base);">
+            "Safety in autonomous systems is achieved by constraining the reachable state space, not by attempting to regulate model outputs."
+          </p>
+          <p style="margin-bottom: var(--space-4);">Model outputs are proposals. State transitions are execution. Governance must operate at the <strong>execution boundary</strong> — where proposals become reality — not at the proposal layer where they can be ignored.</p>
+          <p>A policy is a statement about what should happen. A kernel is a function that determines what <em>does</em> happen.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- =========== FOOTER =========== -->
+<footer class="site-footer">
+  <p style="margin-bottom: var(--space-2);">
+    Admissible Transition Lab &middot;
+    <a href="https://github.com/LalaSkye/admissible-transition-lab" target="_blank" rel="noopener noreferrer">GitHub</a>
+  </p>
+  <p>
+    <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer">
+      Created with Perplexity Computer
+    </a>
+  </p>
+</footer>
+
+<script src="./app.js"></script>
+</body>
+</html>
